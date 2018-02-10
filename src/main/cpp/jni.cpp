@@ -92,6 +92,7 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_create(JNIEnv *env, jobject thiz, jint w,
 
     k2pdfopt_settings_init(k2settings);
     k2settings->document_scale_factor = 1.0;
+    k2settings->dst_magnification = 0.7;
     k2settings->usegs = -1;
     k2settings->dst_width = w;
     k2settings->dst_height = h;
@@ -102,6 +103,12 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_create(JNIEnv *env, jobject thiz, jint w,
     k2settings->dst_color = 1;
     k2settings->show_marked_source = 0;
     k2settings->text_wrap = 1;
+
+    k2settings->dst_userwidth = w;
+    k2settings->dst_userwidth_units= UNITS_PIXELS;
+    k2settings->dst_userheight = h;
+    k2settings->dst_userheight_units = UNITS_PIXELS;
+    k2settings->dst_userdpi = dpi;
 
     masterinfo_init(masterinfo, k2settings);
 }
