@@ -258,7 +258,7 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
     fontsize_histogram_free(&fsh);
   }
 
-JNIEXPORT void JNICALL
+JNIEXPORT jboolean JNICALL
 Java_com_github_axet_k2pdfopt_K2PdfOpt_skipNext(JNIEnv *env, jobject thiz) {
     jclass cls = env->GetObjectClass(thiz);
     jfieldID fid = env->GetFieldID(cls, "handle", "J");
@@ -288,13 +288,18 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_skipNext(JNIEnv *env, jobject thiz) {
     k2settings->preview_page = masterinfo->published_pages;
     bmp_init(masterinfo->preview_bitmap);
 
+    jboolean ret = JNI_FALSE;
+
     if (masterinfo_get_next_output_page(masterinfo, k2settings, flush_output, bmp, &bmpdpi,
                                         &size_reduction, ocrwords) > 0) {
         masterinfo->output_page_count++;
+        ret = JNI_TRUE;
     }
 
     bmp_free(bmp);
     bmp_free(masterinfo->preview_bitmap);
+
+    return ret;
 }
 
 JNIEXPORT jobject JNICALL

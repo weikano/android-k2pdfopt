@@ -19,7 +19,7 @@ public class K2PdfOpt {
 
     public native void load(Bitmap bm, int dpi);
 
-    public native void skipNext();
+    public native boolean skipNext();
 
     public native Bitmap renderNext();
 
