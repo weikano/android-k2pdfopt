@@ -31,7 +31,7 @@
 #include <ctype.h>
 #include <time.h>
 #include <unistd.h>
-#include <sys/termios.h>
+#include <termios.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <signal.h>

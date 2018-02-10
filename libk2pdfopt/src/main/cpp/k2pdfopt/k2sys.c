@@ -20,6 +20,7 @@
 
 #include "k2pdfopt.h"
 #include <stdarg.h>
+#include <android/log.h>
 
 
 void k2sys_init(void)
@@ -177,6 +178,9 @@ int k2printf(char *fmt,...)
 #endif
     status=avprintf(stdout,fmt,args);
     fflush(stdout);
+    char buf[1024];
+    status=vsnprintf(buf,sizeof(buf),fmt,args);
+    __android_log_write(ANDROID_LOG_DEBUG, "k2pdfopt", buf);
     va_end(args);
     willusgui_semaphore_release(k2printf_semaphore);
     return(status);
