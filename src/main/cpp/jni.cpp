@@ -91,8 +91,6 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_create(JNIEnv *env, jobject thiz, jint w,
     K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
 
     k2pdfopt_settings_init(k2settings);
-    k2settings->document_scale_factor = 1.0;
-    k2settings->dst_magnification = 0.7;
     k2settings->usegs = -1;
     k2settings->dst_width = w;
     k2settings->dst_height = h;
