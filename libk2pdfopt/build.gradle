@@ -1,0 +1,125 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.2'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
+    }
+}
+
+repositories {
+    jcenter()
+    mavenLocal()
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'com.github.dcendents.android-maven' // 'gradle install' task
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "27.0.1"
+
+    // http://stackoverflow.com/questions/35312743/workaround-to-link-a-shared-library-in-debug-mode-with-android-studio-v2
+    defaultPublishConfig 'release'
+
+    defaultConfig {
+        minSdkVersion 9
+        targetSdkVersion 25
+        versionCode 1
+        versionName "2.42-1"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+    }
+    signingConfigs {
+        release {
+            storeFile file(RELEASE_STORE_FILE)
+            storePassword RELEASE_STORE_PASSWORD
+            keyAlias RELEASE_KEY_ALIAS
+            keyPassword RELEASE_KEY_PASSWORD
+        }
+    }
+    buildTypes {
+        debug {
+            debuggable true
+            jniDebuggable true
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+}
+
+signing {
+    sign configurations.archives
+}
+
+group = "com.github.axet"
+archivesBaseName = "libk2pdfopt"
+version = android.defaultConfig.versionName
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'android libk2pdfopt'
+                packaging 'jar'
+                description 'android libk2pdfopt.'
+                url 'https://gitlab.com/axet/android-k2pdfopt'
+
+                scm {
+                    connection 'scm:git:https://gitlab.com/axet/android-k2pdfopt'
+                    developerConnection 'scm:git:https://gitlab.com/axet/android-k2pdfopt'
+                    url 'https://gitlab.com/axet/android-k2pdfopt'
+                }
+
+                licenses {
+                    license {
+                        name 'GNU GENERAL PUBLIC LICENSE 2+'
+                        url 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'axet'
+                        name 'Alexey Kuznetsov'
+                        email 'axet@me.com'
+                    }
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    testCompile 'junit:junit:4.12'
+}
