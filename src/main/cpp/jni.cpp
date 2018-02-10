@@ -101,6 +101,7 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_create(JNIEnv *env, jobject thiz, jint w,
     k2settings->dst_color = 1;
     k2settings->show_marked_source = 0;
     k2settings->text_wrap = 1;
+    k2settings->dst_magnification = 0.8;
 
     k2settings->dst_userwidth = w;
     k2settings->dst_userwidth_units= UNITS_PIXELS;
