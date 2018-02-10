@@ -23,6 +23,8 @@ public class K2PdfOpt {
 
     public native Bitmap renderNext();
 
+    public native boolean hasNext();
+
     public native void close();
 
 }

@@ -351,6 +351,19 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_renderNext(JNIEnv *env, jobject thiz) {
     return bm;
 }
 
+JNIEXPORT jboolean JNICALL
+Java_com_github_axet_k2pdfopt_K2PdfOpt_hasNext(JNIEnv *env, jobject thiz) {
+    jclass cls = env->GetObjectClass(thiz);
+    jfieldID fid = env->GetFieldID(cls, "handle", "J");
+    k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
+
+    MASTERINFO *masterinfo = &k2pdfopt->masterinfo;
+
+    jboolean ret = masterinfo->rows > 0 ? JNI_TRUE : JNI_FALSE;
+
+    return ret;
+}
+
 JNIEXPORT void JNICALL
 Java_com_github_axet_k2pdfopt_K2PdfOpt_close(JNIEnv *env, jobject thiz) {
     jclass cls = env->GetObjectClass(thiz);
