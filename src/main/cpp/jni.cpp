@@ -107,7 +107,7 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_create(JNIEnv *env, jobject thiz, jint w,
 }
 
 JNIEXPORT void JNICALL
-Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject bm, jint dpi) {
+Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject bm) {
     jclass cls = env->GetObjectClass(thiz);
     jfieldID fid = env->GetFieldID(cls, "handle", "J");
     k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
@@ -130,6 +130,9 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
         env->ThrowNew(env->FindClass("java/lang/RuntimeException"), strerror(ret * -1));
         return;
     }
+
+    jclass bitmapClass = env->FindClass("android/graphics/Bitmap");
+    jmethodID getDensity = env->GetMethodID(bitmapClass, "getDensity", "()I");
 
     int pageno = 0;
     int nextpage = -1;
@@ -156,7 +159,7 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
     masterinfo_init(masterinfo, k2settings);
 
     masterinfo->preview_bitmap = 0;
-    k2settings->src_dpi = dpi;
+    k2settings->src_dpi = env->CallIntMethod(bm, getDensity);
 
     bmp_init(src);
     bmp_init(marked);
@@ -264,14 +267,6 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_skipNext(JNIEnv *env, jobject thiz) {
     jfieldID fid = env->GetFieldID(cls, "handle", "J");
     k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
 
-    jclass bitmapConfig = env->FindClass("android/graphics/Bitmap$Config");
-    jfieldID rgb8888FieldID = env->GetStaticFieldID(bitmapConfig, "ARGB_8888",
-                                                    "Landroid/graphics/Bitmap$Config;");
-    jobject rgb8888Obj = env->GetStaticObjectField(bitmapConfig, rgb8888FieldID);
-
-    jclass bitmapClass = env->FindClass("android/graphics/Bitmap");
-    jmethodID createBitmapMethodID = env->GetStaticMethodID(bitmapClass, "createBitmap",
-                                                            "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;");
     MASTERINFO *masterinfo = &k2pdfopt->masterinfo;
     K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
 

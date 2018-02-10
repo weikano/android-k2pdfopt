@@ -176,8 +176,6 @@ int k2printf(char *fmt,...)
         }
     else
 #endif
-    status=avprintf(stdout,fmt,args);
-    fflush(stdout);
     char buf[1024];
     status=vsnprintf(buf,sizeof(buf),fmt,args);
     __android_log_write(ANDROID_LOG_DEBUG, "k2pdfopt", buf);
