@@ -9,17 +9,17 @@ Only recent (19+) phones has no issue loading natives. Old phones (16+) unable t
   * https://gitlab.com/axet/android-audio-library/blob/master/src/main/java/com/github/axet/audiolibrary/encoders/FormatMP3.java
 
 ```java
-    import com.github.axet.androidlibrary.app.Native;
+    import com.github.axet.androidlibrary.app.Natives;
 
-    Native.loadLibraries(context, new String[]{"k2pdfopt", "k2pdfoptjni"})
+    Native.loadLibraries(context, "k2pdfopt", "k2pdfoptjni")
 ```
 
-  * https://gitlab.com/axet/android-library/blob/master/src/main/java/com/github/axet/androidlibrary/app/Native.java
+  * https://gitlab.com/axet/android-library/blob/master/src/main/java/com/github/axet/androidlibrary/app/Natives.java
 
 
 ```gradle
 dependencies {
-    compile 'com.github.axet:k2pdfopt:0.0.1'
+    compile 'com.github.axet:k2pdfopt:0.0.3'
 }
 ```
 
