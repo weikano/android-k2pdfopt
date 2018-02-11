@@ -2,6 +2,8 @@
 
 Library to rearrange text on images with text-reflow feature.
 
+  * K2PdfOpt (www.willus.com/k2pdfopt/)
+
 # Natives
 
 Only recent (19+) phones has no issue loading natives. Old phones (16+) unable to locate library dependencies. Very old phones (15+) unable choice proper native library ABI version and crash with error UnsatifiedLinkExcetpion.
