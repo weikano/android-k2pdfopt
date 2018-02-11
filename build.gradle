@@ -125,8 +125,8 @@ uploadArchives {
 
                 licenses {
                     license {
-                        name 'GNU GENERAL PUBLIC LICENSE 2+'
-                        url 'https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html'
+                        name 'GNU GENERAL PUBLIC LICENSE 3+'
+                        url 'https://www.gnu.org/licenses/gpl-3.0.en.html'
                     }
                 }
 
