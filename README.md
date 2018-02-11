@@ -1,6 +1,6 @@
 # libk2pdfopt for Android
 
-Library to view pdf/djvu files with text-reflow feature.
+Library to rearrange text on images with text-reflow feature.
 
 # Natives
 
@@ -11,7 +11,7 @@ Only recent (19+) phones has no issue loading natives. Old phones (16+) unable t
 ```java
     import com.github.axet.androidlibrary.app.Natives;
 
-    Native.loadLibraries(context, "k2pdfopt", "k2pdfoptjni")
+    Natives.loadLibraries(context, "k2pdfopt", "k2pdfoptjni")
 ```
 
   * https://gitlab.com/axet/android-library/blob/master/src/main/java/com/github/axet/androidlibrary/app/Natives.java
