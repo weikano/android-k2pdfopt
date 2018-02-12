@@ -17,6 +17,10 @@ public class K2PdfOpt {
 
     public native void create(int w, int h, int dpi);
 
+    public native void setFontSize(float f);
+
+    public native float getFontSize();
+
     public native void load(Bitmap bm);
 
     public native boolean skipNext();

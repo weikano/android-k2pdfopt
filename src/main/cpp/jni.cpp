@@ -33,14 +33,12 @@ void bmp_32_to_24(unsigned char *src, unsigned char *dst, int w, int h) {
     int rownum;
     int colnum;
     int dstl = 3;
-    for (rownum=0;rownum<h;rownum++)
-    {
-        unsigned char *oldp,*newp;
-        oldp = &src[srcl*rownum*w];
-        newp = &dst[dstl*rownum*w];
-        for (colnum=0;colnum<w;colnum++,oldp+=srcl,newp+=dstl)
-        {
-            unsigned char r,g,b,a;
+    for (rownum = 0; rownum < h; rownum++) {
+        unsigned char *oldp, *newp;
+        oldp = &src[srcl * rownum * w];
+        newp = &dst[dstl * rownum * w];
+        for (colnum = 0; colnum < w; colnum++, oldp += srcl, newp += dstl) {
+            unsigned char r, g, b, a;
             r = oldp[0];
             g = oldp[1];
             b = oldp[2];
@@ -58,14 +56,12 @@ void bmp_24_to_32(unsigned char *src, unsigned char *dst, int w, int h) {
     int rownum;
     int colnum;
     int dstl = 4;
-    for (rownum=0;rownum<h;rownum++)
-    {
-        unsigned char *oldp,*newp;
-        oldp = &src[srcl*rownum*w];
-        newp = &dst[dstl*rownum*w];
-        for (colnum=0;colnum<w;colnum++,oldp+=srcl,newp+=dstl)
-        {
-            unsigned char r,g,b;
+    for (rownum = 0; rownum < h; rownum++) {
+        unsigned char *oldp, *newp;
+        oldp = &src[srcl * rownum * w];
+        newp = &dst[dstl * rownum * w];
+        for (colnum = 0; colnum < w; colnum++, oldp += srcl, newp += dstl) {
+            unsigned char r, g, b;
             r = oldp[0];
             g = oldp[1];
             b = oldp[2];
@@ -101,15 +97,37 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_create(JNIEnv *env, jobject thiz, jint w,
     k2settings->dst_color = 1;
     k2settings->show_marked_source = 0;
     k2settings->text_wrap = 1;
-    k2settings->dst_magnification = 0.8;
+    k2settings->dst_magnification = 1;
 
     k2settings->dst_userwidth = w;
-    k2settings->dst_userwidth_units= UNITS_PIXELS;
+    k2settings->dst_userwidth_units = UNITS_PIXELS;
     k2settings->dst_userheight = h;
     k2settings->dst_userheight_units = UNITS_PIXELS;
     k2settings->dst_userdpi = dpi;
 
     masterinfo_init(masterinfo, k2settings);
+}
+
+JNIEXPORT jfloat JNICALL
+Java_com_github_axet_k2pdfopt_K2PdfOpt_getFontSize(JNIEnv *env, jobject thiz) {
+    jclass cls = env->GetObjectClass(thiz);
+    jfieldID fid = env->GetFieldID(cls, "handle", "J");
+    k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
+
+    K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
+
+    return (jfloat) k2settings->dst_magnification;
+}
+
+JNIEXPORT void JNICALL
+Java_com_github_axet_k2pdfopt_K2PdfOpt_setFontSize(JNIEnv *env, jobject thiz, jfloat f) {
+    jclass cls = env->GetObjectClass(thiz);
+    jfieldID fid = env->GetFieldID(cls, "handle", "J");
+    k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
+
+    K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
+
+    k2settings->dst_magnification = f;
 }
 
 JNIEXPORT void JNICALL
@@ -160,7 +178,7 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
     /* Must be called once per conversion to init margins / devsize / output size */
     k2pdfopt_settings_new_source_document_init(k2settings);
 
-    if(masterinfo->wrapbmp.wrectmaps.wrectmap != NULL)
+    if (masterinfo->wrapbmp.wrectmaps.wrectmap != NULL)
         masterinfo_free(masterinfo, k2settings);
     masterinfo_init(masterinfo, k2settings);
 
@@ -265,7 +283,7 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
     bmp_free(srcgrey);
     bmp_free(src);
     fontsize_histogram_free(&fsh);
-  }
+}
 
 JNIEXPORT jboolean JNICALL
 Java_com_github_axet_k2pdfopt_K2PdfOpt_skipNext(JNIEnv *env, jobject thiz) {
@@ -285,7 +303,7 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_skipNext(JNIEnv *env, jobject thiz) {
     bmp_init(bmp);
 
     WILLUSBITMAP preview_internal;
-    masterinfo->preview_bitmap=&preview_internal;
+    masterinfo->preview_bitmap = &preview_internal;
     k2settings->preview_page = masterinfo->published_pages;
     bmp_init(masterinfo->preview_bitmap);
 
@@ -334,11 +352,11 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_renderNext(JNIEnv *env, jobject thiz) {
     jobject bm = 0;
 
     if (masterinfo_get_next_output_page(masterinfo, k2settings, flush_output, bmp, &bmpdpi,
-                                           &size_reduction, ocrwords) > 0) {
+                                        &size_reduction, ocrwords) > 0) {
         masterinfo->output_page_count++;
 
-        bm = env->CallStaticObjectMethod(bitmapClass, createBitmapMethodID,
-                                                 bmp->width, bmp->height, rgb8888Obj);
+        bm = env->CallStaticObjectMethod(bitmapClass, createBitmapMethodID, bmp->width, bmp->height,
+                                         rgb8888Obj);
 
         int ret;
         unsigned char *buf;
@@ -350,6 +368,9 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_renderNext(JNIEnv *env, jobject thiz) {
         bmp_24_to_32(bmp->data, buf, bmp->width, bmp->height);
 
         AndroidBitmap_unlockPixels(env, bm);
+
+        jmethodID setDensity = env->GetMethodID(bitmapClass, "setDensity", "(I)V");
+        env->CallVoidMethod(bm, setDensity, (jint) bmpdpi);
     }
 
     bmp_free(bmp);
