@@ -6,6 +6,7 @@
 #include <android/native_window.h>
 #include <android/native_window_jni.h>
 #include <android/bitmap.h>
+#include <vector>
 
 extern "C" {
 
@@ -15,8 +16,15 @@ extern "C" {
 }
 
 typedef struct {
+    WILLUSBITMAP bmp;
+    double dpi;
+} PAGE;
+
+typedef struct {
     K2PDFOPT_SETTINGS k2settings;
     MASTERINFO masterinfo;
+    std::vector<PAGE *> pages;
+
 } k2pdfopt, *k2pdfopt_t;
 
 int compositeAlpha(int foregroundAlpha, int backgroundAlpha) {
@@ -279,50 +287,49 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
     if (k2settings->show_marked_source && pageno >= 0)
         mark_source_page(k2settings, masterinfo, NULL, 0, 0xf);
 
+    for (int i = 0; i < k2pdfopt->pages.size(); i++) {
+        bmp_free(&k2pdfopt->pages[i]->bmp);
+        delete k2pdfopt->pages[i];
+    }
+    k2pdfopt->pages.clear();
+
+    int size_reduction;
+    void *ocrwords = 0;
+    int flush_output = 1;
+    PAGE *page = new PAGE;
+    bmp_init(&page->bmp);
+
+    masterinfo->preview_bitmap = 0;
+    k2settings->preview_page = 0;
+
+    while (masterinfo_get_next_output_page(masterinfo, k2settings, flush_output, &page->bmp,
+                                           &page->dpi,
+                                           &size_reduction, ocrwords) > 0) {
+        masterinfo->output_page_count++;
+        k2pdfopt->pages.push_back(page);
+        page = new PAGE;
+        bmp_init(&page->bmp);
+    }
+
     bmp_free(marked);
     bmp_free(srcgrey);
     bmp_free(src);
     fontsize_histogram_free(&fsh);
+
+    masterinfo_free(masterinfo, k2settings);
 }
 
-JNIEXPORT jboolean JNICALL
-Java_com_github_axet_k2pdfopt_K2PdfOpt_skipNext(JNIEnv *env, jobject thiz) {
+JNIEXPORT jint JNICALL
+Java_com_github_axet_k2pdfopt_K2PdfOpt_getCount(JNIEnv *env, jobject thiz) {
     jclass cls = env->GetObjectClass(thiz);
     jfieldID fid = env->GetFieldID(cls, "handle", "J");
     k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
 
-    MASTERINFO *masterinfo = &k2pdfopt->masterinfo;
-    K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
-
-    WILLUSBITMAP _bmp, *bmp;
-    double bmpdpi;
-    int size_reduction;
-    void *ocrwords = 0;
-    int flush_output = 1;
-    bmp = &_bmp;
-    bmp_init(bmp);
-
-    WILLUSBITMAP preview_internal;
-    masterinfo->preview_bitmap = &preview_internal;
-    k2settings->preview_page = masterinfo->published_pages;
-    bmp_init(masterinfo->preview_bitmap);
-
-    jboolean ret = JNI_FALSE;
-
-    if (masterinfo_get_next_output_page(masterinfo, k2settings, flush_output, bmp, &bmpdpi,
-                                        &size_reduction, ocrwords) > 0) {
-        masterinfo->output_page_count++;
-        ret = JNI_TRUE;
-    }
-
-    bmp_free(bmp);
-    bmp_free(masterinfo->preview_bitmap);
-
-    return ret;
+    return (jint) k2pdfopt->pages.size();
 }
 
 JNIEXPORT jobject JNICALL
-Java_com_github_axet_k2pdfopt_K2PdfOpt_renderNext(JNIEnv *env, jobject thiz) {
+Java_com_github_axet_k2pdfopt_K2PdfOpt_renderPage(JNIEnv *env, jobject thiz, jint page) {
     jclass cls = env->GetObjectClass(thiz);
     jfieldID fid = env->GetFieldID(cls, "handle", "J");
     k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
@@ -335,45 +342,26 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_renderNext(JNIEnv *env, jobject thiz) {
     jclass bitmapClass = env->FindClass("android/graphics/Bitmap");
     jmethodID createBitmapMethodID = env->GetStaticMethodID(bitmapClass, "createBitmap",
                                                             "(IILandroid/graphics/Bitmap$Config;)Landroid/graphics/Bitmap;");
-    MASTERINFO *masterinfo = &k2pdfopt->masterinfo;
-    K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
-
-    WILLUSBITMAP _bmp, *bmp;
-    double bmpdpi;
-    int size_reduction;
-    void *ocrwords = 0;
-    int flush_output = 1;
-    bmp = &_bmp;
-    bmp_init(bmp);
-
-    masterinfo->preview_bitmap = 0;
-    k2settings->preview_page = 0;
-
     jobject bm = 0;
 
-    if (masterinfo_get_next_output_page(masterinfo, k2settings, flush_output, bmp, &bmpdpi,
-                                        &size_reduction, ocrwords) > 0) {
-        masterinfo->output_page_count++;
+    WILLUSBITMAP *bmp = &k2pdfopt->pages[page]->bmp;
 
-        bm = env->CallStaticObjectMethod(bitmapClass, createBitmapMethodID, bmp->width, bmp->height,
-                                         rgb8888Obj);
+    bm = env->CallStaticObjectMethod(bitmapClass, createBitmapMethodID, bmp->width, bmp->height,
+                                     rgb8888Obj);
 
-        int ret;
-        unsigned char *buf;
-        if ((ret = AndroidBitmap_lockPixels(env, bm, (void **) &buf)) != 0) {
-            env->ThrowNew(env->FindClass("java/lang/RuntimeException"), strerror(ret * -1));
-            return 0;
-        }
-
-        bmp_24_to_32(bmp->data, buf, bmp->width, bmp->height);
-
-        AndroidBitmap_unlockPixels(env, bm);
-
-        jmethodID setDensity = env->GetMethodID(bitmapClass, "setDensity", "(I)V");
-        env->CallVoidMethod(bm, setDensity, (jint) bmpdpi);
+    int ret;
+    unsigned char *buf;
+    if ((ret = AndroidBitmap_lockPixels(env, bm, (void **) &buf)) != 0) {
+        env->ThrowNew(env->FindClass("java/lang/RuntimeException"), strerror(ret * -1));
+        return 0;
     }
 
-    bmp_free(bmp);
+    bmp_24_to_32(bmp->data, buf, bmp->width, bmp->height);
+
+    AndroidBitmap_unlockPixels(env, bm);
+
+    jmethodID setDensity = env->GetMethodID(bitmapClass, "setDensity", "(I)V");
+    env->CallVoidMethod(bm, setDensity, (jint) k2pdfopt->pages[page]->dpi);
 
     return bm;
 }
@@ -397,9 +385,10 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_close(JNIEnv *env, jobject thiz) {
     jfieldID fid = env->GetFieldID(cls, "handle", "J");
     k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
 
-    MASTERINFO *masterinfo = &k2pdfopt->masterinfo;
-    K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
-    masterinfo_free(masterinfo, k2settings);
+    for (int i = 0; i < k2pdfopt->pages.size(); i++) {
+        bmp_free(&k2pdfopt->pages[i]->bmp);
+        delete k2pdfopt->pages[i];
+    }
 
     delete k2pdfopt;
     env->SetLongField(thiz, fid, 0);
