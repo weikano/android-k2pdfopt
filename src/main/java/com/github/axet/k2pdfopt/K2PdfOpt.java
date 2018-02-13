@@ -23,11 +23,9 @@ public class K2PdfOpt {
 
     public native void load(Bitmap bm);
 
-    public native boolean skipNext();
+    public native int getCount();
 
-    public native Bitmap renderNext();
-
-    public native boolean hasNext();
+    public native Bitmap renderPage(int i);
 
     public native void close();
 
