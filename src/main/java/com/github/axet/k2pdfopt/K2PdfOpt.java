@@ -21,6 +21,14 @@ public class K2PdfOpt {
 
     public native float getFontSize();
 
+    public native void setVerbose(boolean b);
+
+    public native boolean getVerbose();
+
+    public native void setShowMarkedSource(boolean b);
+
+    public native boolean getShowMarkedSource();
+
     public native void load(Bitmap bm);
 
     public native int getCount();

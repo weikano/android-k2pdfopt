@@ -201,7 +201,9 @@ void fontrender_render(WILLUSBITMAP *bmp,double x,double y_from_bottom,
                        char *string,int rot,FILE *out)
 
     {
+#ifdef HAVE_PNG_LIB
     fontrender_render_ex(bmp,x,y_from_bottom,string,rot,0,0,0,out);
+#endif
     }
 
 

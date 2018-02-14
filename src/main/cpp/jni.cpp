@@ -138,6 +138,51 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_setFontSize(JNIEnv *env, jobject thiz, jf
     k2settings->dst_magnification = f;
 }
 
+JNIEXPORT jboolean JNICALL
+Java_com_github_axet_k2pdfopt_K2PdfOpt_getVerbose(JNIEnv *env, jobject thiz) {
+    jclass cls = env->GetObjectClass(thiz);
+    jfieldID fid = env->GetFieldID(cls, "handle", "J");
+    k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
+
+    K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
+
+    return (jboolean) k2settings->verbose;
+}
+
+JNIEXPORT void JNICALL
+Java_com_github_axet_k2pdfopt_K2PdfOpt_setVerbose(JNIEnv *env, jobject thiz, jboolean b) {
+    jclass cls = env->GetObjectClass(thiz);
+    jfieldID fid = env->GetFieldID(cls, "handle", "J");
+    k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
+
+    K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
+
+    k2settings->verbose = b;
+}
+
+
+JNIEXPORT jboolean JNICALL
+Java_com_github_axet_k2pdfopt_K2PdfOpt_getShowMarkedSource(JNIEnv *env, jobject thiz) {
+    jclass cls = env->GetObjectClass(thiz);
+    jfieldID fid = env->GetFieldID(cls, "handle", "J");
+    k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
+
+    K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
+
+    return (jboolean) k2settings->show_marked_source;
+}
+
+JNIEXPORT void JNICALL
+Java_com_github_axet_k2pdfopt_K2PdfOpt_setShowMarkedSource(JNIEnv *env, jobject thiz, jboolean b) {
+    jclass cls = env->GetObjectClass(thiz);
+    jfieldID fid = env->GetFieldID(cls, "handle", "J");
+    k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
+
+    K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
+
+    k2settings->show_marked_source = b;
+}
+
 JNIEXPORT void JNICALL
 Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject bm) {
     jclass cls = env->GetObjectClass(thiz);
@@ -311,6 +356,19 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
         bmp_init(&page->bmp);
     }
 
+    if(k2settings->show_marked_source) {
+        int ret;
+        unsigned char *buf;
+        if ((ret = AndroidBitmap_lockPixels(env, bm, (void **) &buf)) != 0) {
+            env->ThrowNew(env->FindClass("java/lang/RuntimeException"), strerror(ret * -1));
+            return;
+        }
+
+        bmp_24_to_32(marked->data, buf, marked->width, marked->height);
+
+        AndroidBitmap_unlockPixels(env, bm);
+    }
+
     bmp_free(marked);
     bmp_free(srcgrey);
     bmp_free(src);
@@ -364,19 +422,6 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_renderPage(JNIEnv *env, jobject thiz, jin
     env->CallVoidMethod(bm, setDensity, (jint) k2pdfopt->pages[page]->dpi);
 
     return bm;
-}
-
-JNIEXPORT jboolean JNICALL
-Java_com_github_axet_k2pdfopt_K2PdfOpt_hasNext(JNIEnv *env, jobject thiz) {
-    jclass cls = env->GetObjectClass(thiz);
-    jfieldID fid = env->GetFieldID(cls, "handle", "J");
-    k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
-
-    MASTERINFO *masterinfo = &k2pdfopt->masterinfo;
-
-    jboolean ret = masterinfo->rows > 0 ? JNI_TRUE : JNI_FALSE;
-
-    return ret;
 }
 
 JNIEXPORT void JNICALL
