@@ -29,7 +29,7 @@ android {
         minSdkVersion 9
         targetSdkVersion 25
         versionCode 1
-        versionName "2.42-2"
+        versionName "2.42-3"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
