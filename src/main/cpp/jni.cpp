@@ -160,7 +160,6 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_setVerbose(JNIEnv *env, jobject thiz, jbo
     k2settings->verbose = b;
 }
 
-
 JNIEXPORT jboolean JNICALL
 Java_com_github_axet_k2pdfopt_K2PdfOpt_getShowMarkedSource(JNIEnv *env, jobject thiz) {
     jclass cls = env->GetObjectClass(thiz);
@@ -181,6 +180,28 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_setShowMarkedSource(JNIEnv *env, jobject 
     K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
 
     k2settings->show_marked_source = b;
+}
+
+JNIEXPORT jboolean JNICALL
+Java_com_github_axet_k2pdfopt_K2PdfOpt_getLeftToRight(JNIEnv *env, jobject thiz) {
+    jclass cls = env->GetObjectClass(thiz);
+    jfieldID fid = env->GetFieldID(cls, "handle", "J");
+    k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
+
+    K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
+
+    return (jboolean) k2settings->src_left_to_right;
+}
+
+JNIEXPORT void JNICALL
+Java_com_github_axet_k2pdfopt_K2PdfOpt_setLeftToRight(JNIEnv *env, jobject thiz, jboolean b) {
+    jclass cls = env->GetObjectClass(thiz);
+    jfieldID fid = env->GetFieldID(cls, "handle", "J");
+    k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
+
+    K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
+
+    k2settings->src_left_to_right = b;
 }
 
 JNIEXPORT void JNICALL
