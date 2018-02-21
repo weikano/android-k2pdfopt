@@ -29,6 +29,10 @@ public class K2PdfOpt {
 
     public native boolean getShowMarkedSource();
 
+    public native void setLeftToRight(boolean b);
+
+    public native boolean getLeftToRight();
+
     public native void load(Bitmap bm);
 
     public native int getCount();
