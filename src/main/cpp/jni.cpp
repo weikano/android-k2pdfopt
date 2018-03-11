@@ -59,6 +59,30 @@ void bmp_32_to_24(unsigned char *src, unsigned char *dst, int w, int h) {
     }
 }
 
+void bmp_565_to_24(unsigned char *src, unsigned char *dst, int w, int h) {
+    int srcl = 2;
+    int rownum;
+    int colnum;
+    int dstl = 3;
+    for (rownum = 0; rownum < h; rownum++) {
+        unsigned char *oldp, *newp;
+        oldp = &src[srcl * rownum * w];
+        newp = &dst[dstl * rownum * w];
+        for (colnum = 0; colnum < w; colnum++, oldp += srcl, newp += dstl) {
+            unsigned char B5 = oldp[0] & 0x1F;
+            unsigned char G5 = (((oldp[0] & 0xE0) >> 5) | ((oldp[1] & 0x03) << 3)) & 0x1F;
+            unsigned char R5 = (oldp[1] >> 2) & 0x1F;
+            unsigned char R8 = ( R5 * 527 + 23 ) >> 6;
+            unsigned char G8 = ( G5 * 527 + 23 ) >> 6;
+            unsigned char B8 = ( B5 * 527 + 23 ) >> 6;
+            unsigned char A = 255;
+            newp[0] = compositeComponent(R8, A, 255, 255, A);
+            newp[1] = compositeComponent(G8, A, 255, 255, A);
+            newp[2] = compositeComponent(B8, A, 255, 255, A);
+        }
+    }
+}
+
 void bmp_24_to_32(unsigned char *src, unsigned char *dst, int w, int h) {
     int srcl = 3;
     int rownum;
@@ -290,7 +314,14 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
     src->height = info.height;
     src->bpp = 24;
     bmp_alloc(src);
-    bmp_32_to_24(buf, src->data, info.width, info.height);
+    switch (info.format) {
+        case ANDROID_BITMAP_FORMAT_RGBA_8888:
+            bmp_32_to_24(buf, src->data, info.width, info.height);
+            break;
+        case ANDROID_BITMAP_FORMAT_RGB_565:
+            bmp_565_to_24(buf, src->data, info.width, info.height);
+            break;
+    }
 
     AndroidBitmap_unlockPixels(env, bm);
 
