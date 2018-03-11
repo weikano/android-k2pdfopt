@@ -81,6 +81,29 @@ void bmp_24_to_32(unsigned char *src, unsigned char *dst, int w, int h) {
     }
 }
 
+uint16_t rgb_to_565(unsigned char red, unsigned char green, unsigned char blue) {
+    return ((red >> 3) << 11) | ((green >> 2) << 5) | (blue >> 3);
+}
+
+void bmp_24_to_565(unsigned char *src, unsigned char *dst, int w, int h) {
+    int srcl = 3;
+    int rownum;
+    int colnum;
+    int dstl = 2;
+    for (rownum = 0; rownum < h; rownum++) {
+        unsigned char *oldp, *newp;
+        oldp = &src[srcl * rownum * w];
+        newp = &dst[dstl * rownum * w];
+        for (colnum = 0; colnum < w; colnum++, oldp += srcl, newp += dstl) {
+            unsigned char r, g, b;
+            r = oldp[0];
+            g = oldp[1];
+            b = oldp[2];
+            (*(uint16_t *) newp) = rgb_to_565(r, g, b);
+        }
+    }
+}
+
 extern "C" {
 
 JNIEXPORT void JNICALL
@@ -377,7 +400,7 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
         bmp_init(&page->bmp);
     }
 
-    if(k2settings->show_marked_source) {
+    if (k2settings->show_marked_source) {
         int ret;
         unsigned char *buf;
         if ((ret = AndroidBitmap_lockPixels(env, bm, (void **) &buf)) != 0) {
@@ -414,9 +437,9 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_renderPage(JNIEnv *env, jobject thiz, jin
     k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
 
     jclass bitmapConfig = env->FindClass("android/graphics/Bitmap$Config");
-    jfieldID rgb8888FieldID = env->GetStaticFieldID(bitmapConfig, "ARGB_8888",
-                                                    "Landroid/graphics/Bitmap$Config;");
-    jobject rgb8888Obj = env->GetStaticObjectField(bitmapConfig, rgb8888FieldID);
+    jfieldID rgb565FieldID = env->GetStaticFieldID(bitmapConfig, "RGB_565",
+                                                   "Landroid/graphics/Bitmap$Config;");
+    jobject rgb565Obj = env->GetStaticObjectField(bitmapConfig, rgb565FieldID);
 
     jclass bitmapClass = env->FindClass("android/graphics/Bitmap");
     jmethodID createBitmapMethodID = env->GetStaticMethodID(bitmapClass, "createBitmap",
@@ -426,7 +449,10 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_renderPage(JNIEnv *env, jobject thiz, jin
     WILLUSBITMAP *bmp = &k2pdfopt->pages[page]->bmp;
 
     bm = env->CallStaticObjectMethod(bitmapClass, createBitmapMethodID, bmp->width, bmp->height,
-                                     rgb8888Obj);
+                                     rgb565Obj);
+
+    if (bm == 0)
+        return 0; // OutOfMemory exception already pending
 
     int ret;
     unsigned char *buf;
@@ -435,7 +461,7 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_renderPage(JNIEnv *env, jobject thiz, jin
         return 0;
     }
 
-    bmp_24_to_32(bmp->data, buf, bmp->width, bmp->height);
+    bmp_24_to_565(bmp->data, buf, bmp->width, bmp->height);
 
     AndroidBitmap_unlockPixels(env, bm);
 
