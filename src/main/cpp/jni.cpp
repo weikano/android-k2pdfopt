@@ -69,16 +69,12 @@ void bmp_565_to_24(unsigned char *src, unsigned char *dst, int w, int h) {
         oldp = &src[srcl * rownum * w];
         newp = &dst[dstl * rownum * w];
         for (colnum = 0; colnum < w; colnum++, oldp += srcl, newp += dstl) {
+            unsigned char R5 = (oldp[1] >> 3) & 0x1F;
+            unsigned char G6 = (((oldp[0] & 0xE0) >> 5) | ((oldp[1] & 0x07) << 3)) & 0x3F;
             unsigned char B5 = oldp[0] & 0x1F;
-            unsigned char G5 = (((oldp[0] & 0xE0) >> 5) | ((oldp[1] & 0x03) << 3)) & 0x1F;
-            unsigned char R5 = (oldp[1] >> 2) & 0x1F;
-            unsigned char R8 = ( R5 * 527 + 23 ) >> 6;
-            unsigned char G8 = ( G5 * 527 + 23 ) >> 6;
-            unsigned char B8 = ( B5 * 527 + 23 ) >> 6;
-            unsigned char A = 255;
-            newp[0] = compositeComponent(R8, A, 255, 255, A);
-            newp[1] = compositeComponent(G8, A, 255, 255, A);
-            newp[2] = compositeComponent(B8, A, 255, 255, A);
+            newp[0] = ( R5 * 527 + 23 ) >> 6;
+            newp[1] = ( G6 * 259 + 33 ) >> 6;
+            newp[2] = ( B5 * 527 + 23 ) >> 6;
         }
     }
 }
@@ -105,8 +101,11 @@ void bmp_24_to_32(unsigned char *src, unsigned char *dst, int w, int h) {
     }
 }
 
-uint16_t rgb_to_565(unsigned char red, unsigned char green, unsigned char blue) {
-    return ((red >> 3) << 11) | ((green >> 2) << 5) | (blue >> 3);
+uint16_t rgb_to_565(unsigned char R8, unsigned char G8, unsigned char B8) {
+    unsigned char R5 = ( R8 * 249 + 1014 ) >> 11;
+    unsigned char G6 = ( G8 * 253 +  505 ) >> 10;
+    unsigned char B5 = ( B8 * 249 + 1014 ) >> 11;
+    return (R5 << 11) | (G6 << 5) | (B5);
 }
 
 void bmp_24_to_565(unsigned char *src, unsigned char *dst, int w, int h) {
