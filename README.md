@@ -2,7 +2,7 @@
 
 Library to rearrange text on images with text-reflow feature.
 
-  * K2PdfOpt (www.willus.com/k2pdfopt/)
+  * K2PdfOpt (http://www.willus.com/k2pdfopt/)
 
 # Natives
 
@@ -21,7 +21,7 @@ Only recent (19+) phones has no issue loading natives. Old phones (16+) unable t
 
 ```gradle
 dependencies {
-    compile 'com.github.axet:k2pdfopt:0.0.3'
+    compile 'com.github.axet:k2pdfopt:0.0.11'
 }
 ```
 
