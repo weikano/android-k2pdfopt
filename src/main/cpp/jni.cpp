@@ -431,14 +431,19 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
     }
 
     if (k2settings->show_marked_source) {
-        int ret;
-        unsigned char *buf;
         if ((ret = AndroidBitmap_lockPixels(env, bm, (void **) &buf)) != 0) {
             env->ThrowNew(env->FindClass("java/lang/RuntimeException"), strerror(ret * -1));
             return;
         }
 
-        bmp_24_to_32(marked->data, buf, marked->width, marked->height);
+        switch (info.format) {
+            case ANDROID_BITMAP_FORMAT_RGBA_8888:
+                bmp_24_to_32(marked->data, buf, marked->width, marked->height);
+                break;
+            case ANDROID_BITMAP_FORMAT_RGB_565:
+                bmp_24_to_565(marked->data, buf, marked->width, marked->height);
+                break;
+        }
 
         AndroidBitmap_unlockPixels(env, bm);
     }
