@@ -72,9 +72,9 @@ void bmp_565_to_24(unsigned char *src, unsigned char *dst, int w, int h) {
             unsigned char R5 = (oldp[1] >> 3) & 0x1F;
             unsigned char G6 = (((oldp[0] & 0xE0) >> 5) | ((oldp[1] & 0x07) << 3)) & 0x3F;
             unsigned char B5 = oldp[0] & 0x1F;
-            newp[0] = ( R5 * 527 + 23 ) >> 6;
-            newp[1] = ( G6 * 259 + 33 ) >> 6;
-            newp[2] = ( B5 * 527 + 23 ) >> 6;
+            newp[0] = (R5 * 527 + 23) >> 6;
+            newp[1] = (G6 * 259 + 33) >> 6;
+            newp[2] = (B5 * 527 + 23) >> 6;
         }
     }
 }
@@ -102,9 +102,9 @@ void bmp_24_to_32(unsigned char *src, unsigned char *dst, int w, int h) {
 }
 
 uint16_t rgb_to_565(unsigned char R8, unsigned char G8, unsigned char B8) {
-    unsigned char R5 = ( R8 * 249 + 1014 ) >> 11;
-    unsigned char G6 = ( G8 * 253 +  505 ) >> 10;
-    unsigned char B5 = ( B8 * 249 + 1014 ) >> 11;
+    unsigned char R5 = (R8 * 249 + 1014) >> 11;
+    unsigned char G6 = (G8 * 253 + 505) >> 10;
+    unsigned char B5 = (B8 * 249 + 1014) >> 11;
     return (R5 << 11) | (G6 << 5) | (B5);
 }
 
@@ -430,6 +430,9 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
         bmp_init(&page->bmp);
     }
 
+    bmp_free(&page->bmp);
+    delete page;
+
     if (k2settings->show_marked_source) {
         if ((ret = AndroidBitmap_lockPixels(env, bm, (void **) &buf)) != 0) {
             env->ThrowNew(env->FindClass("java/lang/RuntimeException"), strerror(ret * -1));
@@ -461,7 +464,6 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_getCount(JNIEnv *env, jobject thiz) {
     jclass cls = env->GetObjectClass(thiz);
     jfieldID fid = env->GetFieldID(cls, "handle", "J");
     k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
-
     return (jint) k2pdfopt->pages.size();
 }
 
@@ -512,14 +514,14 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_close(JNIEnv *env, jobject thiz) {
     jfieldID fid = env->GetFieldID(cls, "handle", "J");
     k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
 
-    for (int i = 0; i < k2pdfopt->pages.size(); i++) {
-        bmp_free(&k2pdfopt->pages[i]->bmp);
-        delete k2pdfopt->pages[i];
+    if (k2pdfopt != 0) {
+        for (int i = 0; i < k2pdfopt->pages.size(); i++) {
+            bmp_free(&k2pdfopt->pages[i]->bmp);
+            delete k2pdfopt->pages[i];
+        }
+        delete k2pdfopt;
+        env->SetLongField(thiz, fid, 0);
     }
-
-    delete k2pdfopt;
-    env->SetLongField(thiz, fid, 0);
-    return;
 }
 
 }
