@@ -20,11 +20,13 @@ typedef struct {
     double dpi;
 } PAGE;
 
+typedef std::vector<WRECTMAP *> PAGERECTS;
+
 typedef struct {
     K2PDFOPT_SETTINGS k2settings;
     MASTERINFO masterinfo;
+    std::vector<PAGERECTS *> rects;
     std::vector<PAGE *> pages;
-
 } k2pdfopt, *k2pdfopt_t;
 
 int compositeAlpha(int foregroundAlpha, int backgroundAlpha) {
@@ -298,8 +300,7 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
     /* Must be called once per conversion to init margins / devsize / output size */
     k2pdfopt_settings_new_source_document_init(k2settings);
 
-    if (masterinfo->wrapbmp.wrectmaps.wrectmap != NULL)
-        masterinfo_free(masterinfo, k2settings);
+    masterinfo_free(masterinfo, k2settings);
     masterinfo_init(masterinfo, k2settings);
 
     masterinfo->preview_bitmap = 0;
@@ -421,9 +422,34 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
     masterinfo->preview_bitmap = 0;
     k2settings->preview_page = 0;
 
-    while (masterinfo_get_next_output_page(masterinfo, k2settings, flush_output, &page->bmp,
-                                           &page->dpi,
-                                           &size_reduction, ocrwords) > 0) {
+    int bps = 0;
+    int bp = 0;
+    int dstmar_pixels[4];
+
+    get_dest_margins(dstmar_pixels,k2settings,(double)k2settings->dst_dpi,masterinfo->bmp.width,
+                     k2settings->dst_height);
+    int l = dstmar_pixels[0];
+    int t = dstmar_pixels[1];
+
+    while ((bp = masterinfo_get_next_output_page(masterinfo, k2settings, flush_output, &page->bmp,
+                                                 &page->dpi,
+                                                 &size_reduction, ocrwords)) > 0) {
+
+        int bpe = bps + bp;
+        PAGERECTS *rects = new PAGERECTS;
+        for (int i = 0; i < masterinfo->rectmaps.n; i++) {
+            WRECTMAP *m = &masterinfo->rectmaps.wrectmap[i];
+            POINT2D *dst = &m->coords[1];
+            double dsty = dst->y;
+
+            if (bps < dsty && dsty < bpe) {
+                dst->x = l + dst->x;
+                dst->y = t + dst->y - bps;
+                rects->push_back(m);
+            }
+        }
+        k2pdfopt->rects.push_back(rects);
+        bps += bp;
         masterinfo->output_page_count++;
         k2pdfopt->pages.push_back(page);
         page = new PAGE;
@@ -514,14 +540,69 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_close(JNIEnv *env, jobject thiz) {
     jfieldID fid = env->GetFieldID(cls, "handle", "J");
     k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
 
-    if (k2pdfopt != 0) {
+    if (k2pdfopt != NULL) {
+        MASTERINFO *masterinfo = &k2pdfopt->masterinfo;
+        K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
+        masterinfo_free(masterinfo, k2settings);
+
+        for (int i = 0; i < k2pdfopt->rects.size(); i++) {
+            delete k2pdfopt->rects[i];
+        }
+        k2pdfopt->rects.clear();
+
         for (int i = 0; i < k2pdfopt->pages.size(); i++) {
             bmp_free(&k2pdfopt->pages[i]->bmp);
             delete k2pdfopt->pages[i];
         }
+        k2pdfopt->pages.clear();
+
         delete k2pdfopt;
+
         env->SetLongField(thiz, fid, 0);
     }
+}
+
+JNIEXPORT jobject JNICALL
+Java_com_github_axet_k2pdfopt_K2PdfOpt_getRectMaps(JNIEnv *env, jobject thiz, jint pageIndex) {
+    jclass cls = env->GetObjectClass(thiz);
+    jfieldID fid = env->GetFieldID(cls, "handle", "J");
+    k2pdfopt_t k2pdfopt = (k2pdfopt_t) env->GetLongField(thiz, fid);
+
+    K2PDFOPT_SETTINGS *k2settings = &k2pdfopt->k2settings;
+
+    jclass mapClass = env->FindClass("java/util/HashMap");
+    jmethodID mapInit = env->GetMethodID(mapClass, "<init>", "()V");
+    jobject map = env->NewObject(mapClass, mapInit);
+    jmethodID put = env->GetMethodID(mapClass, "put",
+                                     "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
+
+    jclass rectCls = env->FindClass("android/graphics/Rect");
+    jmethodID rectInit = env->GetMethodID(rectCls, "<init>", "(IIII)V");
+
+    PAGERECTS *rects = k2pdfopt->rects[pageIndex];
+    for (int i = 0; i < rects->size(); i++) {
+        WRECTMAP *m = (*rects)[i];
+        double kx = k2settings->src_dpi / m->srcdpiw;
+        double ky = k2settings->src_dpi / m->srcdpih;
+        POINT2D *src = &m->coords[0];
+        POINT2D *dst = &m->coords[1];
+        POINT2D *size = &m->coords[2];
+        double srcx = src->x * kx;
+        double srcy = src->y * ky;
+        double sizex = size->x * kx;
+        double sizey = size->y * ky;
+        jobject k = env->NewObject(rectCls, rectInit, (int) srcx, (int) srcy,
+                                   (int) (srcx + sizex),
+                                   (int) (srcy + sizey));
+        jobject v = env->NewObject(rectCls, rectInit, (int) dst->x, (int) dst->y,
+                                   (int) (dst->x + size->x),
+                                   (int) (dst->y + size->y));
+        env->CallObjectMethod(map, put, k, v);
+
+        env->DeleteLocalRef(k);
+        env->DeleteLocalRef(v);
+    }
+    return map;
 }
 
 }
