@@ -1,6 +1,9 @@
 package com.github.axet.k2pdfopt;
 
 import android.graphics.Bitmap;
+import android.graphics.Rect;
+
+import java.util.Map;
 
 public class K2PdfOpt {
 
@@ -38,6 +41,8 @@ public class K2PdfOpt {
     public native int getCount();
 
     public native Bitmap renderPage(int i);
+
+    public native Map<Rect, Rect> getRectMaps(int page); // Map<Src, Dest>
 
     public native void close();
 

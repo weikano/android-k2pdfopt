@@ -4,7 +4,7 @@
 
 cmake_minimum_required(VERSION 3.4.1)
 
-add_definitions(-DUSE_CMAKE)
+add_definitions(-DUSE_CMAKE -DK2PDFOPT_KINDLEPDFVIEWER)
 
 include_directories(src/main/cpp/k2pdfopt src/main/cpp/willus src/main/cpp/include_mod )
 

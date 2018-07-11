@@ -12,7 +12,7 @@ add_library( k2pdfoptjni
 
 include_directories(src/main/cpp/)
 
-add_definitions(-DUSE_CMAKE)
+add_definitions(-DUSE_CMAKE -DK2PDFOPT_KINDLEPDFVIEWER)
 
 # one day we will be able to replace those lines with find_library(k2pdfopt-lib k2pdfopt)
 add_library(k2pdfopt SHARED IMPORTED)
