@@ -20,7 +20,7 @@ typedef struct {
     double dpi;
 } PAGE;
 
-typedef std::vector<WRECTMAP *> PAGERECTS;
+typedef std::vector<WRECTMAP> PAGERECTS;
 
 typedef struct {
     K2PDFOPT_SETTINGS k2settings;
@@ -445,7 +445,7 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_load(JNIEnv *env, jobject thiz, jobject b
             if (bps < dsty && dsty < bpe) {
                 dst->x = l + dst->x;
                 dst->y = t + dst->y - bps;
-                rects->push_back(m);
+                rects->push_back(*m);
             }
         }
         k2pdfopt->rects.push_back(rects);
@@ -581,7 +581,7 @@ Java_com_github_axet_k2pdfopt_K2PdfOpt_getRectMaps(JNIEnv *env, jobject thiz, ji
 
     PAGERECTS *rects = k2pdfopt->rects[pageIndex];
     for (int i = 0; i < rects->size(); i++) {
-        WRECTMAP *m = (*rects)[i];
+        WRECTMAP *m = &(*rects)[i];
         double kx = k2settings->src_dpi / m->srcdpiw;
         double ky = k2settings->src_dpi / m->srcdpih;
         POINT2D *src = &m->coords[0];
