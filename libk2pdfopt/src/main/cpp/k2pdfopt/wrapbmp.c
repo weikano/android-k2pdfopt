@@ -123,7 +123,7 @@ int wrapbmp_remaining(WRAPBMP *wrapbmp,K2PDFOPT_SETTINGS *k2settings)
 */
 // static int bcount=0;
 void wrapbmp_add(WRAPBMP *wrapbmp,BMPREGION *region,K2PDFOPT_SETTINGS *k2settings,
-                 MASTERINFO *masterinfo,int colgap,int just_flags)
+                 MASTERINFO *masterinfo,int colgap,int just_flags,int centered_dpi)
 
     {
     WILLUSBITMAP *tmp,_tmp;
@@ -242,7 +242,7 @@ exit(10);
         wrmap->srcrot = region->rotdeg;
         wrmap->coords[0].x = region->c1;
         wrmap->coords[0].y = region->r1;
-        wrmap->coords[1].x = 0;
+        wrmap->coords[1].x = centered_dpi ? (masterinfo->bmp.width*region->dpi/centered_dpi-(region->c2-region->c1+1))/2 : 0;
         wrmap->coords[1].y = wrapbmp->base+(region->r1-region->bbox.rowbase);
         wrmap->coords[2].x = region->c2-region->c1+1;
         wrmap->coords[2].y = region->r2-region->r1+1;

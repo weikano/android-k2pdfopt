@@ -36,7 +36,7 @@ android {
         minSdkVersion 9
         targetSdkVersion 25
         versionCode 15
-        versionName "0.1.1"
+        versionName "0.1.2"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
@@ -147,6 +147,6 @@ dependencies {
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    api 'com.github.axet:libk2pdfopt:2.42-4'
+    api 'com.github.axet:libk2pdfopt:2.42-5'
     testImplementation 'junit:junit:4.12'
 }
