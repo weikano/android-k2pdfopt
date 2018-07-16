@@ -72,7 +72,7 @@ static void textrow_mark_source(TEXTROW *textrow,BMPREGION *region,MASTERINFO *m
                                 K2PDFOPT_SETTINGS *k2settings,int marking_flags);
 static void bmpregion_one_row_wrap_and_add(BMPREGION *region,K2PDFOPT_SETTINGS *k2settings,
                                     MASTERINFO *masterinfo,int justflags,int line_spacing,
-                                    int mean_row_gap,int marking_flags,int pi,int region_is_centered);
+                                    int mean_row_gap,int marking_flags,int pi);
 
 
 /*
@@ -2844,7 +2844,7 @@ printf("    Adding it atomically...\n");
             else
                 bmpregion_one_row_wrap_and_add(newregion,k2settings,masterinfo,
                                            justflags,line_spacing,(int)(mlp->mean_row_gap+.5),
-                                           marking_flags,mlp->indented[i-mlp->i1],centered);
+                                           marking_flags,mlp->indented[i-mlp->i1]);
             if (centered || mlp->short_line[i-mlp->i1])
 {
 #ifdef WILLUSDEBUG
@@ -3438,7 +3438,7 @@ static void textrow_mark_source(TEXTROW *textrow,BMPREGION *region,MASTERINFO *m
 */
 static void bmpregion_one_row_wrap_and_add(BMPREGION *region,K2PDFOPT_SETTINGS *k2settings,
                                            MASTERINFO *masterinfo,int justflags,int line_spacing,
-                                           int mean_row_gap,int marking_flags,int pi,int region_is_centered)
+                                           int mean_row_gap,int marking_flags,int pi)
 
     {
     int nc,i,i0,gappix;
@@ -3591,7 +3591,7 @@ printf("wrapregion lcheight=%2d (source lch=%2d)\n",reg.bbox.lcheight,region->bb
         reg.bbox.rowbase = region->bbox.rowbase;
         reg.bbox.gap = mean_row_gap;
         /* Add it to the existing line queue */
-        wrapbmp_add(wrapbmp,&reg,k2settings,masterinfo,gappix,justflags,region_is_centered?k2settings->dst_dpi:0);
+        wrapbmp_add(wrapbmp,&reg,k2settings,masterinfo,gappix,justflags);
         bmpregion_free(&reg);
         if (toolong)
 {

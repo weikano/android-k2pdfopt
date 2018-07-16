@@ -123,7 +123,7 @@ int wrapbmp_remaining(WRAPBMP *wrapbmp,K2PDFOPT_SETTINGS *k2settings)
 */
 // static int bcount=0;
 void wrapbmp_add(WRAPBMP *wrapbmp,BMPREGION *region,K2PDFOPT_SETTINGS *k2settings,
-                 MASTERINFO *masterinfo,int colgap,int just_flags,int centered_dpi)
+                 MASTERINFO *masterinfo,int colgap,int just_flags)
 
     {
     WILLUSBITMAP *tmp,_tmp;
@@ -242,7 +242,7 @@ exit(10);
         wrmap->srcrot = region->rotdeg;
         wrmap->coords[0].x = region->c1;
         wrmap->coords[0].y = region->r1;
-        wrmap->coords[1].x = centered_dpi ? (masterinfo->bmp.width*region->dpi/centered_dpi-(region->c2-region->c1+1))/2 : 0;
+        wrmap->coords[1].x = 0;
         wrmap->coords[1].y = wrapbmp->base+(region->r1-region->bbox.rowbase);
         wrmap->coords[2].x = region->c2-region->c1+1;
         wrmap->coords[2].y = region->r2-region->r1+1;
@@ -469,6 +469,17 @@ k2printf("Bitmap is %d x %d (baseline=%d)\n",wrapbmp->bmp.width,wrapbmp->bmp.hei
         just = (wrapbmp->just & 0xcf) | 0x20;
     else
         just = wrapbmp->just;
+
+    int dstmar_pixels[4];
+    get_dest_margins(dstmar_pixels,k2settings,(double)k2settings->dst_dpi,masterinfo->bmp.width, k2settings->dst_height);
+    int l = dstmar_pixels[0];
+    int r = dstmar_pixels[2];
+    for(int i=0;i<region.wrectmaps->n;i++) { // adjuct center/right for all recently added regions
+        WRECTMAP *m = &region.wrectmaps->wrectmap[i];
+        if(m->coords[1].y>=wrapbmp->base+region.r1-region.bbox.rowbase)
+            m->coords[1].x += ((just&0xc)==4) ? ((masterinfo->bmp.width-l-r)*region.dpi/k2settings->dst_dpi-(wrapbmp->bmp.width))/2 : (((just&0xc)==8) ? ((masterinfo->bmp.width-l-r)*region.dpi/k2settings->dst_dpi-(wrapbmp->bmp.width)) : 0);
+    }
+
     /*
     ** For now, set pageinfo=NULL in calls to bmpregion_add because the
     ** pageinfo processing assumes that the BMPREGION structure it is working
