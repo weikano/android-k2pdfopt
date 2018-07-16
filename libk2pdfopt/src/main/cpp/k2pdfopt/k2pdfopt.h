@@ -972,7 +972,7 @@ void wrapbmp_set_maxgap(WRAPBMP *wrapbmp,int value);
 int  wrapbmp_width(WRAPBMP *wrapbmp);
 int  wrapbmp_remaining(WRAPBMP *wrapbmp,K2PDFOPT_SETTINGS *k2settings);
 void wrapbmp_add(WRAPBMP *wrapbmp,BMPREGION *region,K2PDFOPT_SETTINGS *k2settings,
-                 MASTERINFO *masterinfo,int colgap,int justification_flags,int centered_dpi);
+                 MASTERINFO *masterinfo,int colgap,int justification_flags);
 void wrapbmp_flush(MASTERINFO *masterinfo,K2PDFOPT_SETTINGS *k2settings,int allow_full_justify);
 void wrectmaps_init(WRECTMAPS *wrectmaps);
 void wrectmaps_free(WRECTMAPS *wrectmaps);
