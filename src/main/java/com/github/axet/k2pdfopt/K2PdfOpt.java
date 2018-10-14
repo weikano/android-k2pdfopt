@@ -10,6 +10,7 @@ public class K2PdfOpt {
     static {
         if (Config.natives) {
             System.loadLibrary("k2pdfoptjni");
+            Config.natives = false;
         }
     }
 
