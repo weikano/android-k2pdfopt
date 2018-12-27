@@ -1,0 +1,1 @@
+-keep class com.github.axet.k2pdfopt.K2PdfOpt {*;}
