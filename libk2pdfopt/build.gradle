@@ -41,14 +41,6 @@ android {
             }
         }
     }
-    signingConfigs {
-        release {
-            storeFile file(prop('RELEASE_STORE_FILE'))
-            storePassword prop('RELEASE_STORE_PASSWORD')
-            keyAlias prop('RELEASE_KEY_ALIAS')
-            keyPassword prop('RELEASE_KEY_PASSWORD')
-        }
-    }
     buildTypes {
         debug {
             debuggable true
