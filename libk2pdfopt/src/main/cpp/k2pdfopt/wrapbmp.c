@@ -469,17 +469,17 @@ k2printf("Bitmap is %d x %d (baseline=%d)\n",wrapbmp->bmp.width,wrapbmp->bmp.hei
         just = (wrapbmp->just & 0xcf) | 0x20;
     else
         just = wrapbmp->just;
-
-    int dstmar_pixels[4];
-    get_dest_margins(dstmar_pixels,k2settings,(double)k2settings->dst_dpi,masterinfo->bmp.width, k2settings->dst_height);
-    int l = dstmar_pixels[0];
-    int r = dstmar_pixels[2];
-    for(int i=0;i<region.wrectmaps->n;i++) { // adjuct center/right for all recently added regions
-        WRECTMAP *m = &region.wrectmaps->wrectmap[i];
-        if(m->coords[1].y>=wrapbmp->base+region.r1-region.bbox.rowbase)
-            m->coords[1].x += ((just&0xc)==4) ? ((masterinfo->bmp.width-l-r)*region.dpi/k2settings->dst_dpi-(wrapbmp->bmp.width))/2 : (((just&0xc)==8) ? ((masterinfo->bmp.width-l-r)*region.dpi/k2settings->dst_dpi-(wrapbmp->bmp.width)) : 0);
-    }
-
+	
+	int dstmar_pixels[4];
+	get_dest_margins(dstmar_pixels,k2settings,(double)k2settings->dst_dpi,masterinfo->bmp.width, k2settings->dst_height);
+	int l = dstmar_pixels[0];
+	int r = dstmar_pixels[2];
+	for(int i=0;i<region.wrectmaps->n;i++) { // adjuct center/right for all recently added regions
+	    WRECTMAP *m = &region.wrectmaps->wrectmap[i];
+	    if(m->coords[1].y>=wrapbmp->base+region.r1-region.bbox.rowbase)
+	        m->coords[1].x += ((just&0xc)==4) ? ((masterinfo->bmp.width-l-r)*region.dpi/k2settings->dst_dpi-(wrapbmp->bmp.width))/2 : (((just&0xc)==8) ? ((masterinfo->bmp.width-l-r)*region.dpi/k2settings->dst_dpi-(wrapbmp->bmp.width)) : 0);
+	}
+	
     /*
     ** For now, set pageinfo=NULL in calls to bmpregion_add because the
     ** pageinfo processing assumes that the BMPREGION structure it is working

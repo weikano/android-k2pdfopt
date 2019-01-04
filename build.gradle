@@ -1,8 +1,8 @@
 buildscript {
     repositories {
+        mavenLocal()
         jcenter()
         google()
-        mavenLocal()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.2.1'
@@ -11,9 +11,9 @@ buildscript {
 }
 
 repositories {
+    mavenLocal()
     jcenter()
     google()
-    mavenLocal()
 }
 
 apply plugin: 'com.android.library'
@@ -31,8 +31,8 @@ android {
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 25
-        versionCode 18
-        versionName "0.1.4"
+        versionCode 19
+        versionName "0.1.5"
 
         consumerProguardFiles 'consumer-proguard-rules.pro'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -44,10 +44,10 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file(RELEASE_STORE_FILE)
-            storePassword RELEASE_STORE_PASSWORD
-            keyAlias RELEASE_KEY_ALIAS
-            keyPassword RELEASE_KEY_PASSWORD
+            storeFile file(prop('RELEASE_STORE_FILE'))
+            storePassword prop('RELEASE_STORE_PASSWORD')
+            keyAlias prop('RELEASE_KEY_ALIAS')
+            keyPassword prop('RELEASE_KEY_PASSWORD')
         }
     }
     buildTypes {
@@ -96,17 +96,21 @@ group = "com.github.axet"
 archivesBaseName = "k2pdfopt"
 version = android.defaultConfig.versionName
 
+def prop(String name) {
+    project.hasProperty(name) ? project.getProperty(name) : null
+}
+
 uploadArchives {
     repositories {
         mavenDeployer {
             beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
             repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
+                authentication(userName: prop('ossrhUsername'), password: prop('ossrhPassword'))
             }
 
             snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
+                authentication(userName: prop('ossrhUsername'), password: prop('ossrhPassword'))
             }
 
             pom.project {
@@ -144,6 +148,6 @@ dependencies {
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    api 'com.github.axet:libk2pdfopt:2.42-6'
+    api 'com.github.axet:libk2pdfopt:2.50-1'
     testImplementation 'junit:junit:4.12'
 }
