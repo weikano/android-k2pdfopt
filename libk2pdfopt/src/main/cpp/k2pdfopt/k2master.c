@@ -253,8 +253,10 @@ printf("masterinfo->landscape=%d\n",masterinfo->landscape);
             wfile_written_info("dewarp_image.png",stdout);
             aprintf(TTEXT_NORMAL);
             }
+#if HAVE_LEPTONICA_LIB
         wlept_bmp_dewarp(dwbmp,src,srcgrey,white,k2settings->dewarp,
                          k2settings->debug?"k2opt_dewarp_model.pdf":NULL);
+#endif
         if (k2settings->debug)
             {
             aprintf(TTEXT_BOLD);
