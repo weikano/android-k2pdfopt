@@ -31,23 +31,16 @@ android {
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 25
-        versionCode 19
-        versionName "0.1.5"
+        versionCode 20
+        versionName "0.1.6"
 
         consumerProguardFiles 'consumer-proguard-rules.pro'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
                 cppFlags ""
+				abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "x86", "x86_64" // use NDK r16 for 'armeabi'
             }
-        }
-    }
-    signingConfigs {
-        release {
-            storeFile file(prop('RELEASE_STORE_FILE'))
-            storePassword prop('RELEASE_STORE_PASSWORD')
-            keyAlias prop('RELEASE_KEY_ALIAS')
-            keyPassword prop('RELEASE_KEY_PASSWORD')
         }
     }
     buildTypes {
@@ -148,6 +141,6 @@ dependencies {
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    api 'com.github.axet:libk2pdfopt:2.50-1'
+    api 'com.github.axet:libk2pdfopt:2.50-2'
     testImplementation 'junit:junit:4.12'
 }
