@@ -5,7 +5,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.3.0'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
     }
 }
@@ -37,8 +37,7 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                cppFlags ""
-				abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "x86", "x86_64" // use NDK r16 for 'armeabi'
+                abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
             }
         }
     }
@@ -50,7 +49,6 @@ android {
         }
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
     externalNativeBuild {
@@ -63,6 +61,8 @@ android {
 signing {
     sign configurations.archives
 }
+
+// http://central.sonatype.org/pages/gradle.html
 
 group = "com.github.axet"
 archivesBaseName = "libk2pdfopt"

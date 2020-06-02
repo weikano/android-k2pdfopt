@@ -1,12 +1,6 @@
-# Sets the minimum version of CMake required to build the native
-# library. You should either keep the default value or only pass a
-# value of 3.4.0 or lower.
-
 cmake_minimum_required(VERSION 3.4.1)
 
-add_definitions(-DUSE_CMAKE -DK2PDFOPT_KINDLEPDFVIEWER)
-
-include_directories(src/main/cpp/k2pdfopt src/main/cpp/willus src/main/cpp/include_mod )
+add_definitions( -DUSE_CMAKE -DK2PDFOPT_KINDLEPDFVIEWER )
 
 add_library( willus
 
@@ -54,6 +48,8 @@ add_library( willus
              # src/main/cpp/willus/bmpmupdf.c src/main/cpp/willus/wmupdf.c # MUPDF
 )
 
+include_directories(src/main/cpp/k2pdfopt src/main/cpp/willus src/main/cpp/include_mod )
+
 add_library( k2pdfopt
 
              SHARED
@@ -91,10 +87,6 @@ find_library( log-lib log )
 
 find_library( z-lib z )
 
-target_link_libraries( willus
+target_link_libraries( willus ${log-lib} ${z-lib} )
 
-                       ${log-lib} ${z-lib} )
-
-target_link_libraries( k2pdfopt
-
-                       ${log-lib} ${z-lib} willus )
+target_link_libraries( k2pdfopt ${log-lib} ${z-lib} willus )

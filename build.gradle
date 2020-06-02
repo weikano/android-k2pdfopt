@@ -5,7 +5,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.3.0'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
     }
 }
@@ -38,8 +38,7 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                cppFlags ""
-				abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "x86", "x86_64" // use NDK r16 for 'armeabi'
+                abiFilters "armeabi", "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
             }
         }
     }
@@ -59,6 +58,12 @@ android {
             path "CMakeLists.txt"
         }
     }
+}
+
+// http://central.sonatype.org/pages/gradle.html
+
+def prop(String name) {
+    project.hasProperty(name) ? project.getProperty(name) : null
 }
 
 task javadoc(type: Javadoc) {
@@ -88,10 +93,6 @@ signing {
 group = "com.github.axet"
 archivesBaseName = "k2pdfopt"
 version = android.defaultConfig.versionName
-
-def prop(String name) {
-    project.hasProperty(name) ? project.getProperty(name) : null
-}
 
 uploadArchives {
     repositories {
